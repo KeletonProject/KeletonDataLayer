@@ -1,5 +1,6 @@
 package org.kucro3.keleton.datalayer.ref;
 
+import java.lang.ref.ReferenceQueue;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.ListIterator;
@@ -28,6 +29,16 @@ public class ResilientReferenceGroup<T> implements ReferenceGroup<T, ResilientRe
     public void add(ResilientReference<T> ref)
     {
         refs.addLast(ref);
+    }
+
+    public void add(T object)
+    {
+        add(new ResilientReference<>(object));
+    }
+
+    public void add(T object, ReferenceQueue<T> queue)
+    {
+        add(new ResilientReference<>(object, queue));
     }
 
     @Override
