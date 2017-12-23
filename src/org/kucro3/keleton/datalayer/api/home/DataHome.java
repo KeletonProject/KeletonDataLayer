@@ -50,10 +50,10 @@ public class DataHome {
         return fastDelete0(db, tableName, dataEntity.getId());
     }
 
-    static boolean fastDelete0(Connection db, String tableName, int id)
+    static boolean fastDelete0(Connection db, String tableName, long id)
     {
         return Misc.operate(db, "DELETE FROM " + tableName + " WHERE ID=?", (p) -> {
-            p.setInt(1, id);
+            p.setLong(1, id);
 
             p.executeUpdate();
         });
@@ -92,7 +92,7 @@ public class DataHome {
             {
                 DataHome entity = new DataHome();
 
-                entity.id = results.getInt("ID");
+                entity.id = results.getLong("ID");
                 entity.uuid = results.getObject("UID", UUID.class);
                 entity.name = results.getNString("NAME");
                 entity.location_world = results.getNString("LOCATION_W");
@@ -112,7 +112,7 @@ public class DataHome {
     {
         return Misc.operate(db,
                 "CREATE TABLE IF NOT EXISTS (" + tableName +
-                "ID INTEGER NOT NULL AUTO_INCREMENT," +
+                "ID BIGINT NOT NULL AUTO_INCREMENT," +
                 "UID UUID NOT NULL," +
                 "NAME NVARCHAR(256) NOT NULL," +
                 "LOCATION_W NVARCAHR(256) NOT NULL," +
@@ -226,7 +226,7 @@ public class DataHome {
         this.location_z = z;
     }
 
-    public int getId()
+    public long getId()
     {
         return id;
     }
@@ -243,5 +243,5 @@ public class DataHome {
 
     private int location_z;
 
-    private int id;
+    private long id;
 }
