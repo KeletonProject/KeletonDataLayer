@@ -2,10 +2,7 @@ package org.kucro3.keleton.datalayer.api.home;
 
 import org.kucro3.keleton.datalayer.Misc;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.function.Consumer;
@@ -13,6 +10,53 @@ import java.util.function.Consumer;
 public class DataHome {
     public DataHome()
     {
+    }
+
+    public static boolean deleteAll(Connection db, String tableName)
+    {
+        return Misc.operate(db, "DELETE FROM " + tableName, (p) -> p.executeUpdate());
+    }
+
+    public static boolean delete(Connection db, String tableName, UUID uid)
+    {
+        return Misc.operate(db, "DELETE FROM " + tableName + " WHERE UID=?", (p) -> {
+            p.setObject(1, uid);
+
+            p.executeUpdate();
+        });
+    }
+
+    public static boolean delete(Connection db, String tableName, UUID uid, String name)
+    {
+        return Misc.operate(db, "DELETE FROM " + tableName + " WHERE NAME=? AND UID=?", (p) -> {
+            p.setNString(1, name);
+            p.setObject(2, uid);
+
+            p.executeUpdate();
+        });
+    }
+
+    public static boolean delete(Connection db, String tableName, String world)
+    {
+        return Misc.operate(db, "DELETE FROM " + tableName + " WHERE LOCATION_W=?", (p) -> {
+            p.setNString(1, world);
+
+            p.executeUpdate();
+        });
+    }
+
+    public static boolean fastDelete(Connection db, String tableName, DataHome dataEntity)
+    {
+        return fastDelete0(db, tableName, dataEntity.getId());
+    }
+
+    static boolean fastDelete0(Connection db, String tableName, int id)
+    {
+        return Misc.operate(db, "DELETE FROM " + tableName + " WHERE ID=?", (p) -> {
+            p.setInt(1, id);
+
+            p.executeUpdate();
+        });
     }
 
     public static boolean loadAll(Connection db, String tableName, Consumer<DataHome> consumer)
