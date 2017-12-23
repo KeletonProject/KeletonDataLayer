@@ -5,11 +5,11 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
 public class Misc {
-    public static boolean operate(Connection db, String s, StatementOperation operation)
+    public static boolean operate(Connection db, String sql, StatementOperation operation)
     {
         PreparedStatement p = null;
         try {
-            p = db.prepareStatement(s);
+            p = db.prepareStatement(sql);
             operation.accept(p);
             return true;
         } catch (SQLException e) {

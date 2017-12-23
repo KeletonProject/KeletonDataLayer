@@ -3,12 +3,65 @@ package org.kucro3.keleton.datalayer.api.home;
 import org.kucro3.keleton.datalayer.Misc;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.function.Consumer;
 
-public class EntityHome {
-    public EntityHome()
+public class DataHome {
+    public DataHome()
     {
+    }
+
+    public static boolean loadAll(Connection db, String tableName, Consumer<DataHome> consumer)
+    {
+        return load(db, tableName, "SELECT * FROM " + tableName, consumer);
+    }
+
+    public static boolean load(Connection db, String tableName, UUID uid, Consumer<DataHome> consumer)
+    {
+        return load(db, tableName, "SELECT * FROM " + tableName + " WHERE UID=?", consumer, uid);
+    }
+
+    static boolean load(Connection db, String tableName, String sql, Consumer<DataHome> consumer, Object... args)
+    {
+        ResultSet result;
+        try {
+            PreparedStatement ps = db.prepareStatement(sql);
+            for(int i = 0; i < args.length; )
+                ps.setObject(++i, args[i - 1]);
+            result = ps.executeQuery();
+        } catch (SQLException e) {
+            return false;
+        }
+        if(result == null)
+            return false;
+        return load0(result, consumer);
+    }
+
+    static boolean load0(ResultSet results, Consumer<DataHome> consumer)
+    {
+        try {
+            while (results.next())
+            {
+                DataHome entity = new DataHome();
+
+                entity.id = results.getInt("ID");
+                entity.uuid = results.getObject("UID", UUID.class);
+                entity.name = results.getNString("NAME");
+                entity.location_world = results.getNString("LOCATION_W");
+                entity.location_x = results.getInt("LOCATION_X");
+                entity.location_y = results.getInt("LOCATION_Y");
+                entity.location_z = results.getInt("LOCATION_Z");
+
+                consumer.accept(entity);
+            }
+        } catch (SQLException e) {
+            return false;
+        }
+        return true;
     }
 
     public static boolean ensureTable(Connection db, String tableName)
@@ -17,8 +70,8 @@ public class EntityHome {
                 "CREATE TABLE IF NOT EXISTS (" + tableName +
                 "ID INTEGER NOT NULL AUTO_INCREMENT," +
                 "UID UUID NOT NULL," +
-                "NAME VARCHAR(256) NOT NULL," +
-                "LOCATION_W VARCAHR(256) NOT NULL," +
+                "NAME NVARCHAR(256) NOT NULL," +
+                "LOCATION_W NVARCAHR(256) NOT NULL," +
                 "LOCATION_X INTEGER," +
                 "LOCATION_Y INTEGER," +
                 "LOCATION_Z INTEGER," +
@@ -30,7 +83,7 @@ public class EntityHome {
     {
         return Misc.operate(db,
                 "DELETE FROM " + tableName + " WHERE NAME=? AND UID=?", (p) -> {
-            p.setString(1, name);
+            p.setNString(1, name);
             p.setObject(2, uuid);
 
             p.executeUpdate();
@@ -43,8 +96,8 @@ public class EntityHome {
                 "INSERT INTO " + tableName + " SET (UID, NAME, LOCATION_W, LOCATION_X, LOCATION_Y, LOCATION_Z) " +
                     "VALUES (?, ?, ?, ?, ?, ?)", (p) -> {
             p.setObject(1, uuid);
-            p.setString(2, name);
-            p.setString(3, location_world);
+            p.setNString(2, name);
+            p.setNString(3, location_world);
             p.setInt(4, location_x);
             p.setInt(5, location_y);
             p.setInt(6, location_z);
@@ -57,12 +110,12 @@ public class EntityHome {
     {
         return Misc.operate(db,
                 "UPDATE " + tableName + " SET LOCATION_W=?, LOCATION_X=?, LOCATION_Y=?, LOCATION_Z=? WHERE NAME=? AND UID=?", (p) -> {
-            p.setString(1, location_world);
+            p.setNString(1, location_world);
             p.setInt(2, location_x);
             p.setInt(3, location_y);
             p.setInt(4, location_z);
 
-            p.setString(5, name);
+            p.setNString(5, name);
             p.setObject(6, uuid);
 
             p.executeUpdate();
@@ -129,6 +182,11 @@ public class EntityHome {
         this.location_z = z;
     }
 
+    public int getId()
+    {
+        return id;
+    }
+
     private String name;
 
     private UUID uuid;
@@ -140,4 +198,6 @@ public class EntityHome {
     private int location_y;
 
     private int location_z;
+
+    private int id;
 }
