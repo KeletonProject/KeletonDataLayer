@@ -4,6 +4,7 @@ import java.lang.ref.ReferenceQueue;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.ListIterator;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 public class ResilientReferenceGroup<T> implements ReferenceGroup<T, ResilientReference<T>> {
@@ -53,6 +54,21 @@ public class ResilientReferenceGroup<T> implements ReferenceGroup<T, ResilientRe
         return refs.remove(ref);
     }
 
+    public boolean remove(T object)
+    {
+        final StrongReference<Boolean> ref = new StrongReference<>(false);
+
+        foreach((r, iter) -> {
+           if(ref.get() == object)
+           {
+               iter.remove();
+               ref.set(true);
+           }
+        });
+
+        return ref.get();
+    }
+
     @Override
     public Iterator<ResilientReference<T>> iterator()
     {
@@ -61,15 +77,15 @@ public class ResilientReferenceGroup<T> implements ReferenceGroup<T, ResilientRe
 
     public int setStrong()
     {
-        return foreach((r) -> r.setStrong());
+        return foreach((r, iter) -> r.setStrong());
     }
 
     public int setSoft()
     {
-        return foreach((r) -> r.setSoft());
+        return foreach((r, iter) -> r.setSoft());
     }
 
-    int foreach(Consumer<ResilientReference<T>> consumer)
+    int foreach(BiConsumer<ResilientReference<T>, ListIterator<ResilientReference<T>>> consumer)
     {
         int i = 0;
         ListIterator<ResilientReference<T>> iter = refs.listIterator();
@@ -82,7 +98,7 @@ public class ResilientReferenceGroup<T> implements ReferenceGroup<T, ResilientRe
             if (!ref.available())
                 iter.remove();
             else {
-                consumer.accept(ref);
+                consumer.accept(ref, iter);
                 i++;
             }
 

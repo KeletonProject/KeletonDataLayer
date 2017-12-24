@@ -14,6 +14,11 @@ public class StrongReference<T> implements Reference<T> {
         return ref;
     }
 
+    public void set(T object)
+    {
+        this.ref = object;
+    }
+
     @Override
     public void clear()
     {
