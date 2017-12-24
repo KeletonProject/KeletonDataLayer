@@ -1,9 +1,10 @@
 package org.kucro3.keleton.datalayer.ref;
 
+import org.kucro3.keleton.function.Remove;
+
 import java.lang.ref.ReferenceQueue;
 import java.util.Iterator;
 import java.util.LinkedList;
-import java.util.ListIterator;
 import java.util.function.BiConsumer;
 
 public class ResilientReferenceGroup<T> implements ReferenceGroup<T, ResilientReference<T>> {
@@ -44,6 +45,12 @@ public class ResilientReferenceGroup<T> implements ReferenceGroup<T, ResilientRe
     @Override
     public int size()
     {
+        return resize();
+    }
+
+    int resize()
+    {
+        foreach((refs, iter) -> {});
         return refs.size();
     }
 
@@ -84,24 +91,10 @@ public class ResilientReferenceGroup<T> implements ReferenceGroup<T, ResilientRe
         return foreach((r, iter) -> r.setSoft());
     }
 
-    int foreach(BiConsumer<ResilientReference<T>, ListIterator<ResilientReference<T>>> consumer)
+    @Override
+    public int foreach(BiConsumer<ResilientReference<T>, Remove> consumer)
     {
-        int i = 0;
-        ListIterator<ResilientReference<T>> iter = refs.listIterator();
-
-        if(!iter.hasNext())
-            return 0;
-
-        ResilientReference<T> ref = iter.next();
-        for(; iter.hasNext(); ref = iter.next())
-            if (!ref.available())
-                iter.remove();
-            else {
-                consumer.accept(ref, iter);
-                i++;
-            }
-
-        return i;
+        return NormalReferenceGroup.foreach(refs, consumer);
     }
 
     protected final LinkedList<ResilientReference<T>> refs;
