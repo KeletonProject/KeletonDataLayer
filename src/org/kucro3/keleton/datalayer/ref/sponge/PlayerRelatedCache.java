@@ -50,7 +50,7 @@ public class PlayerRelatedCache<T> extends PlayerRelated<PlayerRelatedCache<T>> 
         refs.clear();
     }
 
-    public boolean contains(UUID uuid)
+    public boolean available(UUID uuid)
     {
         return get(uuid) != null;
     }
