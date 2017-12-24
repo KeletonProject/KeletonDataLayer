@@ -3,6 +3,8 @@ package org.kucro3.keleton.datalayer.ref.sponge;
 import org.kucro3.keleton.datalayer.ref.ResilientReferenceGroup;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.entity.living.player.Player;
+import org.spongepowered.api.event.Listener;
+import org.spongepowered.api.event.network.ClientConnectionEvent;
 
 import java.util.*;
 import java.util.function.BiConsumer;
@@ -148,6 +150,20 @@ public class PlayerRelatedCache<T> {
     {
         for(Map.Entry<UUID, ResilientReferenceGroup<T>> entry : Collections.unmodifiableMap(map).entrySet())
             biConsumer.accept(entry.getKey(), entry.getValue());
+    }
+
+    @Listener
+    public void onLogin(ClientConnectionEvent.Join event)
+    {
+        if(callbackOnLogin != null)
+            callbackOnLogin.accept(event.getTargetEntity(), this);
+    }
+
+    @Listener
+    public void onLogoff(ClientConnectionEvent.Disconnect event)
+    {
+        if(callbackOnLogoff != null)
+            callbackOnLogoff.accept(event.getTargetEntity(), this);
     }
 
     private boolean enabled;
