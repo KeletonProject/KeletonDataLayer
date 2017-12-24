@@ -1,6 +1,5 @@
 package org.kucro3.keleton.datalayer.ref.sponge;
 
-import javafx.util.Pair;
 import org.kucro3.keleton.datalayer.ref.ResilientReferenceGroup;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.entity.living.player.Player;
