@@ -1,178 +1,89 @@
 package org.kucro3.keleton.datalayer.ref.sponge;
 
-import org.kucro3.keleton.datalayer.ref.ResilientReferenceGroup;
-import org.spongepowered.api.Sponge;
-import org.spongepowered.api.entity.living.player.Player;
-import org.spongepowered.api.event.Listener;
-import org.spongepowered.api.event.network.ClientConnectionEvent;
+import org.kucro3.keleton.datalayer.ref.ResilientReference;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.UUID;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
-public class PlayerRelatedCache<T> {
+public class PlayerRelatedCache<T> extends PlayerRelated<PlayerRelatedCache<T>> {
     public PlayerRelatedCache(Object plugin)
     {
-        this.plugin = plugin;
-        this.map = new HashMap<>();
+        super(plugin);
     }
 
-    public Object getPlugin()
+    static <T> T unpack(ResilientReference<T> ref)
     {
-        return plugin;
+        if(ref == null)
+            return null;
+        return ref.get();
     }
 
-    public BiConsumer<Player, PlayerRelatedCache<T>> getCallbackOnLogin()
+    public void foreach(BiConsumer<UUID, ResilientReference<T>> biConsumer)
     {
-        return callbackOnLogin;
+        Iterator<Map.Entry<UUID, ResilientReference<T>>> iter = refs.entrySet().iterator();
+        while(iter.hasNext())
+        {
+            Map.Entry<UUID, ResilientReference<T>> entry = iter.next();
+            if(entry.getValue().available())
+                biConsumer.accept(entry.getKey(), entry.getValue());
+            else
+                iter.remove();
+        }
     }
 
-    public void setCallbackOnLogin(BiConsumer<Player, PlayerRelatedCache<T>> callbackOnLogin)
+    public boolean computeIfPresent(UUID uuid, Consumer<ResilientReference<T>> consumer)
     {
-        this.callbackOnLogin = callbackOnLogin;
-    }
-
-    public BiConsumer<Player, PlayerRelatedCache<T>> getCallbackOnLogoff()
-    {
-        return callbackOnLogoff;
-    }
-
-    public void setCallbackOnLogoff(BiConsumer<Player, PlayerRelatedCache<T>> callbackOnLogoff)
-    {
-        this.callbackOnLogoff = callbackOnLogoff;
-    }
-
-    public synchronized boolean isEnabled()
-    {
-        return enabled;
-    }
-
-    public synchronized boolean enable()
-    {
-        if(enabled)
+        ResilientReference<T> ref = refs.get(uuid);
+        if(ref != null && ref.available())
+            consumer.accept(ref);
+        else
             return false;
-
-        Sponge.getEventManager().registerListeners(plugin, this);
-
-        return (enabled = true);
-    }
-
-    public synchronized boolean disable()
-    {
-        if(!enabled)
-            return false;
-
-        Sponge.getEventManager().unregisterListeners(this);
-
-        return (enabled = false);
-    }
-
-    public ResilientReferenceGroup<T> addGroup(UUID uuid)
-    {
-        ResilientReferenceGroup<T> refs = new ResilientReferenceGroup<>();
-        addGroup(uuid, refs);
-        return refs;
-    }
-
-    public void addGroup(UUID uuid, ResilientReferenceGroup<T> refs)
-    {
-        map.put(uuid, refs);
-    }
-
-    public ResilientReferenceGroup<T> removeGroup(UUID uuid)
-    {
-        return map.remove(uuid);
-    }
-
-    public ResilientReferenceGroup<T> getGroup(UUID uuid)
-    {
-        return map.get(uuid);
-    }
-
-    public boolean hasGroup(UUID uuid)
-    {
-        return map.containsKey(uuid);
-    }
-
-    boolean computeIfPresent(UUID uuid, Consumer<ResilientReferenceGroup<T>> consumer)
-    {
-        Optional<ResilientReferenceGroup<T>> opt;
-        (opt = Optional.ofNullable(map.get(uuid))).ifPresent(consumer);
-        return opt.isPresent();
+        return true;
     }
 
     public void clear()
     {
-        map.clear();
+        refs.clear();
     }
 
-    public void clearGroups()
+    public boolean contains(UUID uuid)
     {
-        foreach((k, v) -> v.clear());
+        return get(uuid) != null;
     }
 
-    public boolean clearGroup(UUID uuid)
+    public T get(UUID uuid)
     {
-        return computeIfPresent(uuid, (refs) -> refs.clear());
+        return unpack(refs.get(uuid));
     }
 
-    public void clearReferences()
+    public ResilientReference<T> getReference(UUID uuid)
     {
-        foreach((k, v) -> v.clearReferences());
+        return refs.get(uuid);
     }
 
-    public boolean clearReferencesOf(UUID uuid)
+    public T set(UUID uuid, T object)
     {
-        return computeIfPresent(uuid, (refs) -> refs.clearReferences());
+       return unpack(refs.put(uuid, new ResilientReference<>(object)));
     }
 
-    public void setSoft()
+    public T remove(UUID uuid)
     {
-        foreach((k, v) -> v.setSoft());
+        return unpack(refs.remove(uuid));
     }
 
     public boolean setSoft(UUID uuid)
     {
-        return computeIfPresent(uuid, (refs) -> refs.setSoft());
-    }
-
-    public void setStrong()
-    {
-        foreach((k, v) -> v.setStrong());
+        return computeIfPresent(uuid, (ref) -> ref.setSoft());
     }
 
     public boolean setStrong(UUID uuid)
     {
-        return computeIfPresent(uuid, (refs) -> refs.setStrong());
+        return computeIfPresent(uuid, (ref) -> ref.setStrong());
     }
 
-    public void foreach(BiConsumer<UUID, ResilientReferenceGroup<T>> biConsumer)
-    {
-        for(Map.Entry<UUID, ResilientReferenceGroup<T>> entry : Collections.unmodifiableMap(map).entrySet())
-            biConsumer.accept(entry.getKey(), entry.getValue());
-    }
-
-    @Listener
-    public void onLogin(ClientConnectionEvent.Join event)
-    {
-        if(callbackOnLogin != null)
-            callbackOnLogin.accept(event.getTargetEntity(), this);
-    }
-
-    @Listener
-    public void onLogoff(ClientConnectionEvent.Disconnect event)
-    {
-        if(callbackOnLogoff != null)
-            callbackOnLogoff.accept(event.getTargetEntity(), this);
-    }
-
-    private boolean enabled;
-
-    private BiConsumer<Player, PlayerRelatedCache<T>> callbackOnLogin;
-
-    private BiConsumer<Player, PlayerRelatedCache<T>> callbackOnLogoff;
-
-    private final Map<UUID, ResilientReferenceGroup<T>> map;
-
-    private final Object plugin;
+    private final HashMap<UUID, ResilientReference<T>> refs = new HashMap<>();
 }
