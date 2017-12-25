@@ -4,12 +4,54 @@ import org.kucro3.keleton.datalayer.Misc;
 
 import java.sql.*;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Consumer;
 
 public class DataHome {
     public DataHome()
     {
+    }
+
+    public static Optional<DataHome> query(Connection db, String tableName, UUID owner, String name)
+    {
+        try {
+            PreparedStatement ps = db.prepareStatement("SELECT * FROM " + tableName + " WHERE UID=? AND NAME=?");
+
+            ps.setObject(1, owner);
+            ps.setNString(2, name);
+
+            return fromResult(ps.executeQuery());
+        } catch (SQLException e) {
+            return Optional.empty();
+        }
+    }
+
+    public static Optional<DataHome> query(Connection db, String tableName, UUID owner, String name, String world)
+    {
+        try {
+            PreparedStatement ps = db.prepareStatement("SELECT * FROM " + tableName + " WHERE UID=? AND NAME=? AND LOCATION_W=?");
+
+            ps.setObject(1, owner);
+            ps.setNString(2, name);
+            ps.setNString(3, world);
+
+            return fromResult(ps.executeQuery());
+        } catch (SQLException e) {
+            return Optional.empty();
+        }
+    }
+
+    static Optional<DataHome> fromResult(ResultSet result) throws SQLException
+    {
+        if(result.next())
+        {
+            DataHome entity = new DataHome();
+            consume(result, entity);
+            return Optional.of(entity);
+        }
+        else
+            return Optional.empty();
     }
 
     public static boolean deleteAll(Connection db, String tableName)
@@ -61,15 +103,15 @@ public class DataHome {
 
     public static boolean loadAll(Connection db, String tableName, Consumer<DataHome> consumer)
     {
-        return load(db, tableName, "SELECT * FROM " + tableName, consumer);
+        return load(db, "SELECT * FROM " + tableName, consumer);
     }
 
     public static boolean load(Connection db, String tableName, UUID uid, Consumer<DataHome> consumer)
     {
-        return load(db, tableName, "SELECT * FROM " + tableName + " WHERE UID=?", consumer, uid);
+        return load(db, "SELECT * FROM " + tableName + " WHERE UID=?", consumer, uid);
     }
 
-    static boolean load(Connection db, String tableName, String sql, Consumer<DataHome> consumer, Object... args)
+    static boolean load(Connection db, String sql, Consumer<DataHome> consumer, Object... args)
     {
         ResultSet result;
         try {
@@ -92,20 +134,24 @@ public class DataHome {
             {
                 DataHome entity = new DataHome();
 
-                entity.id = results.getLong("ID");
-                entity.uuid = results.getObject("UID", UUID.class);
-                entity.name = results.getNString("NAME");
-                entity.location_world = results.getNString("LOCATION_W");
-                entity.location_x = results.getInt("LOCATION_X");
-                entity.location_y = results.getInt("LOCATION_Y");
-                entity.location_z = results.getInt("LOCATION_Z");
-
+                consume(results, entity);
                 consumer.accept(entity);
             }
         } catch (SQLException e) {
             return false;
         }
         return true;
+    }
+
+    static void consume(ResultSet results, DataHome entity) throws SQLException
+    {
+        entity.id = results.getLong("ID");
+        entity.uuid = results.getObject("UID", UUID.class);
+        entity.name = results.getNString("NAME");
+        entity.location_world = results.getNString("LOCATION_W");
+        entity.location_x = results.getInt("LOCATION_X");
+        entity.location_y = results.getInt("LOCATION_Y");
+        entity.location_z = results.getInt("LOCATION_Z");
     }
 
     public static boolean ensureTable(Connection db, String tableName)
