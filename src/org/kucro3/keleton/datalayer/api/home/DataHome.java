@@ -56,7 +56,7 @@ public class DataHome {
 
     public static boolean deleteAll(Connection db, String tableName)
     {
-        return Misc.operate(db, "DELETE FROM " + tableName, (p) -> p.executeUpdate());
+        return Misc.operate(db, "DELETE FROM " + tableName, (p) -> p.executeUpdate(), true);
     }
 
     public static boolean delete(Connection db, String tableName, UUID uid)
@@ -65,7 +65,7 @@ public class DataHome {
             p.setObject(1, uid);
 
             p.executeUpdate();
-        });
+        }, true);
     }
 
     public static boolean delete(Connection db, String tableName, UUID uid, String name)
@@ -75,7 +75,7 @@ public class DataHome {
             p.setObject(2, uid);
 
             p.executeUpdate();
-        });
+        }, true);
     }
 
     public static boolean delete(Connection db, String tableName, String world)
@@ -84,7 +84,7 @@ public class DataHome {
             p.setNString(1, world);
 
             p.executeUpdate();
-        });
+        }, true);
     }
 
     public static boolean fastDelete(Connection db, String tableName, DataHome dataEntity)
@@ -98,7 +98,7 @@ public class DataHome {
             p.setLong(1, id);
 
             p.executeUpdate();
-        });
+        }, true);
     }
 
     public static boolean loadAll(Connection db, String tableName, Consumer<DataHome> consumer)
@@ -166,7 +166,7 @@ public class DataHome {
                 "LOCATION_Y INTEGER," +
                 "LOCATION_Z INTEGER," +
                 "PRIMARY KEY (ID)" +
-                ")", (p) -> {});
+                ")", (p) -> {}, true);
     }
 
     public synchronized boolean remove(Connection db, String tableName)
@@ -177,7 +177,7 @@ public class DataHome {
             p.setObject(2, uuid);
 
             p.executeUpdate();
-        });
+        }, true);
     }
 
     public synchronized boolean insert(Connection db, String tableName)
@@ -193,7 +193,7 @@ public class DataHome {
             p.setInt(6, location_z);
 
             p.executeUpdate();
-        });
+        }, true);
     }
 
     public synchronized boolean update(Connection db, String tableName)
@@ -209,7 +209,7 @@ public class DataHome {
             p.setObject(6, uuid);
 
             p.executeUpdate();
-        });
+        }, true);
     }
 
     public String getName()
