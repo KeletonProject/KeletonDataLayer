@@ -5,7 +5,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
 public class Misc {
-    public static boolean operate(Connection db, String sql, StatementOperation operation, boolean sfm)
+    public static boolean operate(Connection db, String sql, StatementOperation operation, boolean sfm) throws SQLException
     {
         PreparedStatement p = null;
         try {
@@ -28,7 +28,7 @@ public class Misc {
                 throw new InternalError(e);
             }
 
-            return false;
+            throw e;
         } finally {
             try {
                 db.setAutoCommit(true);

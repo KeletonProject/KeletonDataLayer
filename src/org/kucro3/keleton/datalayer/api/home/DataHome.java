@@ -54,12 +54,12 @@ public class DataHome {
             return Optional.empty();
     }
 
-    public static boolean deleteAll(Connection db, String tableName)
+    public static boolean deleteAll(Connection db, String tableName) throws SQLException
     {
         return Misc.operate(db, "DELETE FROM " + tableName, (p) -> p.executeUpdate(), true);
     }
 
-    public static boolean delete(Connection db, String tableName, UUID uid)
+    public static boolean delete(Connection db, String tableName, UUID uid) throws SQLException
     {
         return Misc.operate(db, "DELETE FROM " + tableName + " WHERE UID=?", (p) -> {
             p.setObject(1, uid);
@@ -68,7 +68,7 @@ public class DataHome {
         }, true);
     }
 
-    public static boolean delete(Connection db, String tableName, UUID uid, String name)
+    public static boolean delete(Connection db, String tableName, UUID uid, String name) throws SQLException
     {
         return Misc.operate(db, "DELETE FROM " + tableName + " WHERE NAME=? AND UID=?", (p) -> {
             p.setNString(1, name);
@@ -78,7 +78,7 @@ public class DataHome {
         }, true);
     }
 
-    public static boolean delete(Connection db, String tableName, String world)
+    public static boolean delete(Connection db, String tableName, String world) throws SQLException
     {
         return Misc.operate(db, "DELETE FROM " + tableName + " WHERE LOCATION_W=?", (p) -> {
             p.setNString(1, world);
@@ -87,12 +87,12 @@ public class DataHome {
         }, true);
     }
 
-    public static boolean fastDelete(Connection db, String tableName, DataHome dataEntity)
+    public static boolean fastDelete(Connection db, String tableName, DataHome dataEntity) throws SQLException
     {
         return fastDelete0(db, tableName, dataEntity.getId());
     }
 
-    static boolean fastDelete0(Connection db, String tableName, long id)
+    static boolean fastDelete0(Connection db, String tableName, long id) throws SQLException
     {
         return Misc.operate(db, "DELETE FROM " + tableName + " WHERE ID=?", (p) -> {
             p.setLong(1, id);
@@ -101,17 +101,17 @@ public class DataHome {
         }, true);
     }
 
-    public static boolean loadAll(Connection db, String tableName, Consumer<DataHome> consumer)
+    public static boolean loadAll(Connection db, String tableName, Consumer<DataHome> consumer) throws SQLException
     {
         return load(db, "SELECT * FROM " + tableName, consumer);
     }
 
-    public static boolean load(Connection db, String tableName, UUID uid, Consumer<DataHome> consumer)
+    public static boolean load(Connection db, String tableName, UUID uid, Consumer<DataHome> consumer) throws SQLException
     {
         return load(db, "SELECT * FROM " + tableName + " WHERE UID=?", consumer, uid);
     }
 
-    static boolean load(Connection db, String sql, Consumer<DataHome> consumer, Object... args)
+    static boolean load(Connection db, String sql, Consumer<DataHome> consumer, Object... args) throws SQLException
     {
         ResultSet result;
         try {
@@ -127,7 +127,7 @@ public class DataHome {
         return load0(result, consumer);
     }
 
-    static boolean load0(ResultSet results, Consumer<DataHome> consumer)
+    static boolean load0(ResultSet results, Consumer<DataHome> consumer) throws SQLException
     {
         try {
             while (results.next())
@@ -154,7 +154,7 @@ public class DataHome {
         entity.location_z = results.getInt("LOCATION_Z");
     }
 
-    public static boolean ensureTable(Connection db, String tableName)
+    public static boolean ensureTable(Connection db, String tableName) throws SQLException
     {
         return Misc.operate(db,
                 "CREATE TABLE IF NOT EXISTS (" + tableName +
@@ -169,7 +169,7 @@ public class DataHome {
                 ")", (p) -> {}, true);
     }
 
-    public synchronized boolean remove(Connection db, String tableName)
+    public synchronized boolean remove(Connection db, String tableName) throws SQLException
     {
         return Misc.operate(db,
                 "DELETE FROM " + tableName + " WHERE NAME=? AND UID=?", (p) -> {
@@ -180,7 +180,7 @@ public class DataHome {
         }, true);
     }
 
-    public synchronized boolean insert(Connection db, String tableName)
+    public synchronized boolean insert(Connection db, String tableName) throws SQLException
     {
         return Misc.operate(db,
                 "INSERT INTO " + tableName + " SET (UID, NAME, LOCATION_W, LOCATION_X, LOCATION_Y, LOCATION_Z) " +
@@ -196,7 +196,7 @@ public class DataHome {
         }, true);
     }
 
-    public synchronized boolean update(Connection db, String tableName)
+    public synchronized boolean update(Connection db, String tableName) throws SQLException
     {
         return Misc.operate(db,
                 "UPDATE " + tableName + " SET LOCATION_W=?, LOCATION_X=?, LOCATION_Y=?, LOCATION_Z=? WHERE NAME=? AND UID=?", (p) -> {
