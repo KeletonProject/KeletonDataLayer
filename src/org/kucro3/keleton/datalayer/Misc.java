@@ -7,7 +7,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
 public class Misc {
-    public static boolean operate(Connection db, String sql, StatementOperation operation, boolean sfm)
+    public static boolean operate(Connection db, String sql, StatementOperation operation, String exceptionMessage, boolean sfm)
     {
         PreparedStatement p = null;
         try {
@@ -30,7 +30,7 @@ public class Misc {
                 throw new InternalError(e);
             }
 
-            throw new HomeStorageException(e);
+            throw new HomeStorageException(exceptionMessage, e);
         } finally {
             try {
                 db.setAutoCommit(true);

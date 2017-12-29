@@ -26,7 +26,7 @@ public final class HomeStorage {
 
             return fromResult(ps.executeQuery());
         } catch (SQLException e) {
-            throw new HomeStorageException(e);
+            throw new HomeStorageException("Query failure", e);
         }
     }
 
@@ -41,7 +41,7 @@ public final class HomeStorage {
 
             return fromResult(ps.executeQuery());
         } catch (SQLException e) {
-            throw new HomeStorageException(e);
+            throw new HomeStorageException("Query failure", e);
         }
     }
 
@@ -61,7 +61,7 @@ public final class HomeStorage {
 
     public static boolean deleteAll(Connection db, String tableName)
     {
-        return Misc.operate(db, "DELETE FROM " + tableName, (p) -> p.executeUpdate(), true);
+        return Misc.operate(db, "DELETE FROM " + tableName, (p) -> p.executeUpdate(), "Failed on delete all", true);
     }
 
     public static boolean delete(Connection db, String tableName, UUID uid)
@@ -70,7 +70,7 @@ public final class HomeStorage {
             p.setObject(1, uid);
 
             p.executeUpdate();
-        }, true);
+        }, "Removal failure", true);
     }
 
     public static boolean delete(Connection db, String tableName, UUID uid, String name)
@@ -80,7 +80,7 @@ public final class HomeStorage {
             p.setObject(2, uid);
 
             p.executeUpdate();
-        }, true);
+        }, "Removal failure", true);
     }
 
     public static boolean delete(Connection db, String tableName, String world)
@@ -89,7 +89,7 @@ public final class HomeStorage {
             p.setNString(1, world);
 
             p.executeUpdate();
-        }, true);
+        }, "Removal failure", true);
     }
 
     public static boolean fastDelete(Connection db, String tableName, HomeData dataEntity)
@@ -103,7 +103,7 @@ public final class HomeStorage {
             p.setLong(1, id);
 
             p.executeUpdate();
-        }, true);
+        }, "Fast removal failure", true);
     }
 
     public static boolean loadAll(Connection db, String tableName, Consumer<HomeData> consumer)
@@ -130,7 +130,7 @@ public final class HomeStorage {
                 return false;
             return load0(result, consumer);
         } catch (SQLException e) {
-            throw new HomeStorageException(e);
+            throw new HomeStorageException("Failed on loading (X)", e);
         }
     }
 
@@ -145,7 +145,7 @@ public final class HomeStorage {
             }
             return true;
         } catch (SQLException e) {
-            throw new HomeStorageException(e);
+            throw new HomeStorageException("Failed on loading (X0)", e);
         }
     }
 
@@ -162,7 +162,7 @@ public final class HomeStorage {
                 entity.location_z = results.getInt("LOCATION_Z");
             }
         } catch (SQLException e) {
-            throw new HomeStorageException(e);
+            throw new HomeStorageException("Failed on consuming (X)", e);
         }
     }
 
@@ -185,7 +185,7 @@ public final class HomeStorage {
                         p.setInt(6, entity.location_z);
 
                         p.executeUpdate();
-                    }, true);
+                    }, "Insertion failure", true);
         }
     }
 
@@ -203,7 +203,7 @@ public final class HomeStorage {
                         p.setObject(6, entity.uuid);
 
                         p.executeUpdate();
-                    }, true);
+                    }, "Updating failure", true);
         }
     }
 
@@ -219,6 +219,6 @@ public final class HomeStorage {
                         "LOCATION_Y INTEGER," +
                         "LOCATION_Z INTEGER," +
                         "PRIMARY KEY (ID)" +
-                        ")", (p) -> {}, true);
+                        ")", (p) -> {}, "Table initialization failure", true);
     }
 }
