@@ -1,11 +1,13 @@
 package org.kucro3.keleton.datalayer;
 
+import org.kucro3.keleton.world.home.exception.HomeStorageException;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
 public class Misc {
-    public static boolean operate(Connection db, String sql, StatementOperation operation, boolean sfm) throws SQLException
+    public static boolean operate(Connection db, String sql, StatementOperation operation, boolean sfm)
     {
         PreparedStatement p = null;
         try {
@@ -28,7 +30,7 @@ public class Misc {
                 throw new InternalError(e);
             }
 
-            throw e;
+            throw new HomeStorageException(e);
         } finally {
             try {
                 db.setAutoCommit(true);
