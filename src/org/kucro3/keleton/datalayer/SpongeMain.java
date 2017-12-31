@@ -11,5 +11,5 @@ import org.spongepowered.api.plugin.Plugin;
         authors = "Kumonda221")
 @KeletonModule(name = "keleton-datalayer",
                dependencies = "keletonframework")
-public class SpongeMain extends KeletonInstance {
+public class SpongeMain {
 }
