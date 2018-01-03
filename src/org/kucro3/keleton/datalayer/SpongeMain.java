@@ -1,7 +1,6 @@
 package org.kucro3.keleton.datalayer;
 
-import org.kucro3.keleton.implementation.KeletonInstance;
-import org.kucro3.keleton.implementation.KeletonModule;
+import org.kucro3.keleton.implementation.Module;
 import org.spongepowered.api.plugin.Plugin;
 
 @Plugin(id = "keleton-datalayer",
@@ -9,7 +8,7 @@ import org.spongepowered.api.plugin.Plugin;
         version = "1.0",
         description = "Keleton Data Layer",
         authors = "Kumonda221")
-@KeletonModule(name = "keleton-datalayer",
-               dependencies = "keletonframework")
+@Module(id = "keleton-datalayer",
+        dependencies = {"keletonframework"})
 public class SpongeMain {
 }
